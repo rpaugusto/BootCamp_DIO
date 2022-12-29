@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: PresistentVolumeClaim
+metadata:
+  name: mysql-dados
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standart-rwo
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLables:
+      app: mysql
+  template:
+    metadata:
+      lables:
+        app: mysql
+    spec:
+      containers:
+      - image: denilsonbonatti/projeto-database:1.0
+        args:
+        - "--ignore-db-dir=lost+found"
+        imagPullPolicy: Always
+        name: mysql
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-dados
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-dados
+        PresistentVolumeClaim:
+          claimName: mysql-dados
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php
+  lables:
+    app: php
+spec:
+  replicas: 6
+  selector:
+    matchLables:
+      app: php
+  template:
+    metadata:
+      lables:
+        app: php
+    spec:
+      containers:
+      - name: php
+        image: denilsonbonatti/projeto-backend:1.0
+        imagPullPolicy: Always
+        ports:
+        - containerPort: 80
