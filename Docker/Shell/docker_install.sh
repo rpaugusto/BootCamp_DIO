@@ -1,14 +1,18 @@
 #!/bin/bash
 
+echo "Start Shell update"
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl software-properties-common lsb-release
+
 echo 'Start install Docker'
-sudo apt update
-sudo apt install  -y
-sudo apt install net-tools apt-transport-https ca-certificates curl software-properties-common -y
-sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" -y
-sudo apt update
-sudo apt install docker-ce -y
-sudo usermod -aG docker ${USER}
-newgrp docker
-sudo systemctl status docker
-sudo systemctl enable docker
+
+curl -fsSL https://get.docker.com | sudo bash
+sudo curl -fsSL "https://github.com/docker/compose/releases/download/1.25.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+sudo usermod -aG docker vagrant
+
+echo 'Docker Compose'
+sudo apt-get install docker-compose -y
+
+
+#EOF

@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: PresistentVolumeClaim
+metadata:
+  name: mysql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standart-rwo
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLables:
+      app: mysql
+  template:
+    metadata:
+      lables:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:latest
+        imagPullPolicy: Always
+        ports:
+        - containerPort: 3306
+        env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: my-secret
+                  key: ROOT_PASSWORD            
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: my-secret
+                  key: ROOT_DATABASE
+        volumeMounts:
+        - name: mysql
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql
+        PresistentVolumeClaim:
+          claimName: mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-connection
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql
+  clusterIP: None
